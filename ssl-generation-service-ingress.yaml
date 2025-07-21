@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssl-generation-service
+  namespace: default
+spec:
+  selector:
+    app: ssl-generation
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ssl-generation-ingress
+  namespace: default
+  annotations:
+    # Add your annotations here if needed
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: ssl-generation-service
+                port:
+                  number: 80

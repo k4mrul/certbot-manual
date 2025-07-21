@@ -1,45 +1,70 @@
 #!/bin/bash
 
-set -e
 
 # Certbot-provided environment variables
 DOMAIN="${CERTBOT_DOMAIN}"
 VALIDATION="${CERTBOT_VALIDATION}"
 TOKEN="${CERTBOT_TOKEN}"
 
+# Sanitize domain for resource names
+RESOURCE_NAME=$(echo "$DOMAIN" | tr '.' '-')
+
+# Store the manifest in a heredoc variable for readability
+read -r -d '' MANIFEST <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${RESOURCE_NAME}-verify
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: sg1.sre.ovh
+  ports:
+    - port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${RESOURCE_NAME}-verify-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /.well-known/acme-challenge/\$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ${DOMAIN}
+      http:
+        paths:
+          - path: /.well-known/acme-challenge(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ${RESOURCE_NAME}-verify
+                port:
+                  number: 80
+EOF
+
+# Loop through kubeconfig files and apply manifest
+for KUBECONFIG in kube-eu.yaml kube-us.yaml; do
+  CLUSTER_NAME=$(echo "$KUBECONFIG" | sed 's/\.yaml$//' | sed 's/kube-//')
+  echo "[INFO] Applying domain verification manifest to remote cluster ($CLUSTER_NAME)..."
+  kubectl apply -n default --kubeconfig="$KUBECONFIG" -f <(echo "$MANIFEST") || true
+  echo "[INFO] Manifest applied to remote cluster ($CLUSTER_NAME)."
+done
+
+sleep 10
+
+
 # Paths
-NGINX_CONF="/etc/nginx/sites-available/${DOMAIN}"
-NGINX_ENABLED="/etc/nginx/sites-enabled/${DOMAIN}"
-WEBROOT="/var/www/html"
+WEBROOT="/usr/share/nginx/html"
 CHALLENGE_DIR="${WEBROOT}/.well-known/acme-challenge"
-CHALLENGE_FILE="${CHALLENGE_DIR}/${TOKEN}"  # Changed: file name is now the token
+CHALLENGE_FILE="${CHALLENGE_DIR}/${TOKEN}" 
 
 echo "[INFO] Starting Certbot manual-auth-hook for domain: $DOMAIN"
 
-# Step 1: Create NGINX config if it doesn't exist
-if [ ! -f "$NGINX_CONF" ]; then
-    echo "[INFO] Creating NGINX config at $NGINX_CONF"
-    sudo tee "$NGINX_CONF" > /dev/null <<EOF
-server {
-    listen 80;
-    server_name ${DOMAIN};
-    root ${WEBROOT};
-    index index.html;
-}
-EOF
-fi
 
-# Step 2: Enable the site if not yet linked
-if [ ! -L "$NGINX_ENABLED" ]; then
-    echo "[INFO] Enabling site by linking config"
-    sudo ln -s "$NGINX_CONF" "$NGINX_ENABLED"
-    echo "[INFO] Reloading NGINX"
-    sudo systemctl reload nginx
-fi
-
-# Step 3: Create challenge directory and file
+# Check if the webroot directory exists
 echo "[INFO] Creating challenge directory: $CHALLENGE_DIR"
-sudo mkdir -p "$CHALLENGE_DIR"
+mkdir -p "$CHALLENGE_DIR"
 
 # Debug output
 echo "[DEBUG] CERTBOT_VALIDATION = ${VALIDATION}"
@@ -47,6 +72,7 @@ echo "[DEBUG] CERTBOT_TOKEN      = ${TOKEN}"
 echo "[INFO] Writing challenge file:"
 echo "[INFO]   Filename: $CHALLENGE_FILE"
 echo "[INFO]   Content : ${VALIDATION}"
-echo "${VALIDATION}" | sudo tee "$CHALLENGE_FILE" > /dev/null
+echo "${VALIDATION}" | tee "$CHALLENGE_FILE" > /dev/null
 
-echo "[INFO] Manual auth hook complete."
+sleep 2
+
