@@ -16,5 +16,5 @@ certbot certonly \
   --agree-tos \
   --register-unsafely-without-email \
   --non-interactive \
-  --deploy-hook true \
+  --deploy-hook ./apply-secrets.sh \
   -d "$DOMAIN"

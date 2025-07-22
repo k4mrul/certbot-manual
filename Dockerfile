@@ -17,19 +17,21 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
 # Install certbot
 RUN apk add --no-cache certbot
 
-# Copy scripts into the container
+### Copy scripts into the container
 # certbot.sh: Used as manual auth hook for certbot
 COPY certbot.sh /certbot.sh
 # cleanup-host.sh: Used as manual cleanup hook for certbot
 COPY cleanup-host.sh /cleanup-host.sh
 # certbot-wrapper.sh: Simplifies certbot command for domain issuance
 COPY certbot-wrapper.sh /certbot-wrapper.sh
-# deploy-hook.sh: Runs after certbot successfully renews a certificate
-COPY deploy-hook.sh /deploy-hook.sh
 # start.sh: Entrypoint script to start cron and nginx
 COPY start.sh /start.sh
+# update-secrets.sh: Deploy hook for certbot renew
+COPY update-secrets.sh /update-secrets.sh
+# apply-secrets.sh: Script to manually apply secrets to clusters
+COPY apply-secrets.sh /apply-secrets.sh
 # Make scripts executable
-RUN chmod +x /certbot.sh /cleanup-host.sh /certbot-wrapper.sh /start.sh /deploy-hook.sh
+RUN chmod +x /certbot.sh /cleanup-host.sh /certbot-wrapper.sh /start.sh /update-secrets.sh /apply-secrets.sh
 
 # Create a symlink for easier access
 RUN ln -s /certbot-wrapper.sh /usr/local/bin/get-cert

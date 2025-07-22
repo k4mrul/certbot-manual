@@ -28,9 +28,3 @@ for KUBECONFIG in kube-eu.yaml kube-us.yaml; do
   echo "[INFO] Resources deleted from remote cluster ($CLUSTER_NAME)."
 done
 
-# Loop through kubeconfig files and apply secrets
-for KUBECONFIG in kube-eu.yaml kube-sg.yaml kube-us.yaml; do
-  CLUSTER_NAME=$(echo "$KUBECONFIG" | sed 's/\.yaml$//' | sed 's/kube-//')
-  echo "[INFO] Applying ssl cert ($CLUSTER_NAME)..."
-  kubectl create -n default secret tls ${RESOURCE_NAME}-certificate3 --cert=/etc/letsencrypt/live/${DOMAIN}/fullchain.pem --key=/etc/letsencrypt/live/${DOMAIN}/privkey.pem --kubeconfig="$KUBECONFIG" || true
-done
