@@ -24,7 +24,7 @@ Provides an automated solution for managing SSL/TLS certificates using Certbot i
 2. Create directory for saving certs `mkdir -p /home/ubuntu/live-certs`
 3. Deploy the Kubernetes resources using `main-deployment.yaml` in your main region (exm: SG).
 4. The pod starts Nginx and a cron daemon for scheduled certificate renewals.
-5. To issue a certificate, exec into the pod and run `get-cert <your-domain>`.
+5. To issue a certificate, exec into the pod and run `get-cert <your-domain>`. Or simply `kubectl exec -it deploy/ssl-generation -- get-cert <domain>`
 6. Certbot uses manual hooks to complete the HTTP challenge and obtain the certificate.
 7. Every 7 days, the cron job runs `certbot renew`. If any certificates are renewed, the deploy hook script updates the secrets in all clusters.
 
