@@ -20,7 +20,7 @@ Provides an automated solution for managing SSL/TLS certificates using Certbot i
   - Nginx runs in the foreground, serving HTTP challenges and keeping the pod alive for certificate operations.
 
 ### How It Works
-1. For multi-region secret deployment, make sure to include the kubeconfig files (`kube-eu.yaml`, `kube-sg.yaml`, `kube-us.yaml`) in the pod (see main-deployment.yaml file). These files are required by the deploy hook to update secrets in each cluster.
+1. Make sure to mount the kubeconfig files (`kube-eu.yaml`, `kube-sg.yaml`, `kube-us.yaml`) in the pod (see main-deployment.yaml file). These files are required by the deploy hook to update secrets in each cluster.
 2. Create directory for saving certs `mkdir -p /home/ubuntu/live-certs`
 3. Deploy the Kubernetes resources using `main-deployment.yaml` in your main region (exm: SG).
 4. The pod starts Nginx and a cron daemon for scheduled certificate renewals.
