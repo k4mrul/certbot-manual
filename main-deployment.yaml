@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ssl-generation
-          image: k4mrul/nginx-certbot:v2
+          image: k4mrul/nginx-certbot:v5
           volumeMounts:
             - name: kube-eu-volume
               mountPath: /kube-eu.yaml
