@@ -19,6 +19,9 @@ Provides an automated solution for managing SSL/TLS certificates using Certbot i
 - **Nginx Integration:**
   - Nginx runs in the foreground, serving HTTP challenges and keeping the pod alive for certificate operations.
 
+### Pre-requisite
+Make sure to set `ssl-redirect` [false in ingress nginx](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#ssl-redirect) globally
+
 ### How It Works
  - Create a directory for saving certificates: `mkdir -p /home/ubuntu/live-certs` in main/SG cluster.
  - In your main cluster, create a secret for each region's kubeconfig file (`kube-eu.yaml`, `kube-sg.yaml`, `kube-us.yaml`):
