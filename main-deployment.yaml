@@ -26,6 +26,8 @@ spec:
             - name: kube-us-volume
               mountPath: /kube-us.yaml
               subPath: kube-us.yaml
+            - name: ssl-certs
+              mountPath: /etc/letsencrypt/live
       volumes:
         - name: kube-eu-volume
           secret:
@@ -45,6 +47,10 @@ spec:
             items:
               - key: kube-us.yaml
                 path: kube-us.yaml
+        - name: ssl-certs
+          hostPath:
+            path: /home/ubuntu/live-certs
+            type: Directory
 ---
 apiVersion: v1
 kind: Service
