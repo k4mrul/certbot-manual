@@ -20,11 +20,13 @@ Provides an automated solution for managing SSL/TLS certificates using Certbot i
   - Nginx runs in the foreground, serving HTTP challenges and keeping the pod alive for certificate operations.
 
 ### How It Works
-1. Make sure to mount the kubeconfig files (`kube-eu.yaml`, `kube-sg.yaml`, `kube-us.yaml`) in the pod (see main-deployment.yaml file). These files are required by the deploy hook to update secrets in each cluster.
-2. Create directory for saving certs `mkdir -p /home/ubuntu/live-certs`
-3. Deploy the Kubernetes resources using `main-deployment.yaml` in your main region (exm: SG).
-4. The pod starts Nginx and a cron daemon for scheduled certificate renewals.
-5. To issue a certificate, exec into the pod and run `get-cert <your-domain>`. Or simply `kubectl exec -it deploy/ssl-generation -- get-cert <domain>`
-6. Certbot uses manual hooks to complete the HTTP challenge and obtain the certificate.
-7. Every 7 days, the cron job runs `certbot renew`. If any certificates are renewed, the deploy hook script updates the secrets in all clusters.
+ - Create a directory for saving certificates: `mkdir -p /home/ubuntu/live-certs` in main/SG cluster.
+ - In your main cluster, create a secret for each region's kubeconfig file (`kube-eu.yaml`, `kube-sg.yaml`, `kube-us.yaml`):
+   `kubectl create secret generic kube-sg --from-file=kube-sg.yaml -n default`
+   (Apply similar steps for other regions.)
+   Mount these secrets and the main deployment file (`main-deployment.yaml`) and apply only in the main/SG cluster. The kubeconfig files are used by the deploy hook to update secrets across all clusters.
+ - The pod starts Nginx (serving HTTP challenges) and a cron daemon for scheduled certificate renewals.
+ - To issue a certificate, exec into the pod and run `get-cert <your-domain>`, or use: `kubectl exec -it deploy/ssl-generation -- get-cert <domain>`
+ - Certbot uses manual hooks to complete the HTTP challenge and obtain the certificate.
+ - Every 7 days, the cron job runs `certbot renew`. If any certificates are renewed, the deploy hook script updates the secrets in all clusters using the mounted kubeconfig files.
 
