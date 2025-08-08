@@ -18,7 +18,7 @@ metadata:
   namespace: default
 spec:
   type: ExternalName
-  externalName: sg1.sre.ovh
+  externalName: sg.ondokan.com
   ports:
     - port: 80
 ---
