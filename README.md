@@ -21,7 +21,7 @@ Provides an automated solution for managing SSL/TLS certificates using Certbot i
 
 ### Pre-requisite
 - Make sure to set `ssl-redirect` [false in ingress nginx](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#ssl-redirect) globally
--  Point the [ExternalName](https://github.com/k4mrul/certbot-manual/blob/main/certbot.sh#L21) domain to the IP address of your main cluster
+-  Point the [ExternalName](https://github.com/k4mrul/certbot-manual/blob/main/certbot.sh#L21) domain to the IP address of your main cluster. You need to re-build the docker image
 
 ### How It Works
  - Create a directory for saving certificates: `mkdir -p /home/ubuntu/ssl-certs` in main/SG cluster.
