@@ -24,7 +24,7 @@ Provides an automated solution for managing SSL/TLS certificates using Certbot i
 -  Point the [ExternalName](https://github.com/k4mrul/certbot-manual/blob/main/certbot.sh#L21) domain to the IP address of your main cluster
 
 ### How It Works
- - Create a directory for saving certificates: `mkdir -p /home/ubuntu/live-certs` in main/SG cluster.
+ - Create a directory for saving certificates: `mkdir -p /home/ubuntu/ssl-certs` in main/SG cluster.
  - In your main cluster, create a secret for each region's kubeconfig file (`kube-eu.yaml`, `kube-sg.yaml`, `kube-us.yaml`):
    `kubectl create secret generic kube-sg --from-file=kube-sg.yaml -n default`
    (Apply similar steps for other regions.)
